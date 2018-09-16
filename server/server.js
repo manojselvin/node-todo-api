@@ -18,10 +18,11 @@ app.post('/todos', (req, res) => {
         res.send(result);
     }, (err) => {
         res.status(400).send(err);
-        console.log('Unable to save todo', err);
     })
 });
 
 app.listen(3000, () => {
     console.log('Server started and listening on port 3000');
 });
+
+module.exports = {app};
