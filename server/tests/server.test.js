@@ -1,20 +1,25 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
-beforeEach((done) => {
-    let todos = [{
-        text: 'Learn node js completely'
-    }, {
-        text: 'Practice by building some thing cool'
-    }, {
-        text: 'Practice again face challenges, learn the experiences and win'
-    }, {
-        text: 'Start learning React.js'
-    }];
+const todos = [{
+    _id: new ObjectID(),
+    text: 'Learn node js completely'
+}, {
+    _id: new ObjectID(),
+    text: 'Practice by building some thing cool'
+}, {
+    _id: new ObjectID(),
+    text: 'Practice again face challenges, learn the experiences and win'
+}, {
+    _id: new ObjectID(),
+    text: 'Start learning React.js'
+}];
 
+beforeEach((done) => {
     Todo.remove({}).then(() => {
         return Todo.insertMany(todos)
     }).then(() => done());
@@ -61,17 +66,51 @@ describe('POST /todos', () => {
             }).catch(e => done(e));
         });
     });
+});
 
-    describe('GET /todos', () => {
+describe('GET /todos', () => {
 
-        it('should fetch all todos', (done) => {
-            request(app)
-            .get('/todos')
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.todos.length).toBe(4);
-            }).end(() => done());
-        });
-
+    it('should fetch all todos', (done) => {
+        request(app)
+        .get('/todos')
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todos.length).toBe(4);
+        }).end(done);
     });
+
+});
+
+describe('GET /todos/:id', () => {
+
+    it('should return a todo matching the id passed', (done) => {
+        let id = todos[0]._id.toHexString();
+
+        request(app)
+        .get(`/todos/${id}`)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todo.text).toBe(todos[0].text);
+        }).end(done);
+    });
+
+    it('should return 404 not found for invalid id passed', (done) => {
+        let id = '5ba63d1d45553ab';
+
+        request(app)
+        .get(`/todos/${id}`)
+        .expect(404)
+        .end(done);
+    });
+
+    it('should return 404 not found for todo not found', (done) => {
+        let id = '5ba63d1d45553ab';
+
+        request(app)
+        .get(`/todos/${id}`)
+        .expect(404)
+        .end(done);
+    });
+
+
 });
